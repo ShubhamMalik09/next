@@ -7,33 +7,36 @@ export const sendEmail = async({email,emailType,userId}:any) =>{
         const hashedToken = await  bcrypt.hash(userId.toString(),10)
         if(emailType==="VERIFY"){
             await User.findByIdAndUpdate(userId,
-                {
-                    verifyToken:hashedToken,
-                    verifyTokenExpiry: Date.now() + 3600000
+                {$set:
+                    {
+                        verifyToken:hashedToken,
+                        verifyTokenExpiry: Date.now() + 3600000
+                    }
                 }
             )
         } 
         else if(emailType==="RESET"){
             await User.findByIdAndUpdate(userId,
-                {
-                    forgotPasswordToken:hashedToken,
-                    forgotPasswordTokenExpiry: Date.now() + 3600000
+                {$set:
+                    {
+                        forgotPasswordToken:hashedToken,
+                        forgotPasswordTokenExpiry: Date.now() + 3600000
+                    }
                 }
             )
         } 
 
-        const transporter = nodemailer.createTransport({
-            host:"smtp.forwardmail.net",
-            port:465,
-            secure:true,
-            auth:{
-                user:"",
-                pass:"",
-            },
-        });
+        const transport = nodemailer.createTransport({
+            host: "sandbox.smtp.mailtrap.io",
+            port: 2525,
+            auth: {
+              user: "3569734a669c61",
+              pass: "c26101d1d60262"
+            }
+          });
 
         const mailOptions ={
-            from:"hitesh@hitesh.ai",
+            from:"shubham@sam.ai",
             to:email,
             subject: emailType=== 'VERIFY' ? "Verify your email" : "Rest your password",
             html:`<p> Click <a href="${process.env.DOMAIN}/verifyemail?token=${hashedToken}">here</a> to ${emailType==='VERIFY' ? "verify your email":"reset your password"}
@@ -42,7 +45,7 @@ export const sendEmail = async({email,emailType,userId}:any) =>{
             ${process.env.DOMAIN}/verifyemail?token=${hashedToken}
             </p>`
         }
-        const mailResponse = await transporter.sendMail(mailOptions);
+        const mailResponse = await transport.sendMail(mailOptions);
 
         return mailResponse
     } catch(error:any){
