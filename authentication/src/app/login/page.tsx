@@ -22,7 +22,7 @@ const LoginPage= () => {
             setLoading(true);
             const response = await axios.post("/api/users/login",user);
             console.log('login success',response.data);
-            router.push("/me");
+            router.push("/profile");
         } catch(error:any){
             console.log("login failed")
             toast.error(error.message);
